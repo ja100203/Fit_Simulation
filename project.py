@@ -1,220 +1,3 @@
-# import cv2
-# import mediapipe as mp
-# import numpy as np
-# mp_drawing=mp.solutions.drawing_utils
-# mp_pose=mp.solutions.pose
-
-# cap = cv2.VideoCapture(0)
-
-# def calculate_angle_right(a, b, c, right_hand=True):
-#     a = np.array(a)  # First
-#     b = np.array(b)  # Mid
-#     c = np.array(c)  # End
-    
-#     if right_hand:
-#         radians = np.arctan2(a[1]-b[1], a[0]-b[0]) - np.arctan2(c[1]-b[1], c[0]-b[0])
-#     else:
-#         radians = np.arctan2(c[1]-b[1], c[0]-b[0]) - np.arctan2(a[1]-b[1], a[0]-b[0])
-    
-#     angle = np.abs(radians * 180.0 / np.pi)
-    
-#     if angle > 180.0:
-#         angle = 360 - angle
-        
-#     return angle
-
-
-# def calculate_angle(a,b,c, right_hand=False):
-#     a = np.array(a) # First
-#     b = np.array(b) # Mid
-#     c = np.array(c) # End
-    
-#     radians = np.arctan2(c[1]-b[1], c[0]-b[0]) - np.arctan2(a[1]-b[1], a[0]-b[0])
-#     angle = np.abs(radians*180.0/np.pi)
-    
-#     if angle >180.0:
-#         angle = 360-angle
-        
-#     return angle 
-
-# # Curl counter variables
-# counter = 0 
-# stage = None
-
-# ## Setup mediapipe instance
-# with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
-#     while cap.isOpened():
-#         ret, frame = cap.read()
-#         frame = cv2.resize(frame,(1280,720),interpolation=cv2.INTER_AREA)
-        
-#         # Recolor image to RGB
-#         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-#         image.flags.writeable = False
-      
-#         # Make detection
-#         results = pose.process(image)
-    
-#         # Recolor back to BGR
-#         image.flags.writeable = True
-#         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        
-#         # Extract landmarks
-#         try:
-#             landmarks = results.pose_landmarks.landmark
-            
-#             # Get coordinates
-#             shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
-#             elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
-#             wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
-            
-#             shoulder_right = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
-#             elbow_right = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y]
-#             wrist_right = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y]
-            
-#             # Calculate angle
-#             angle = calculate_angle(shoulder, elbow, wrist)
-#             angle_right = calculate_angle_right(shoulder_right, elbow_right, wrist_right)
-            
-#             # Visualize angle
-#             cv2.putText(image, str(angle), 
-#                            tuple(np.multiply(elbow, [640, 480]).astype(int)), 
-#                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA
-#                                 )
-            
-#             # Curl counter logic
-#             if angle > 160:
-#                 stage = "down"
-#             if angle < 30 and stage =='down':
-#                 stage="up"
-#                 counter +=1
-#                 print(counter)
-                       
-#         except:
-#             pass
-        
-#         # Render curl counter
-#         # Setup status box
-#         cv2.rectangle(image, (0,0), (225,73), (245,117,16), -1)
-        
-#         # Rep data
-#         cv2.putText(image, 'REPS', (15,12), 
-#                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
-#         cv2.putText(image, str(counter), 
-#                     (10,60), 
-#                     cv2.FONT_HERSHEY_SIMPLEX, 2, (255,255,255), 2, cv2.LINE_AA)
-        
-#         # Stage data
-#         cv2.putText(image, 'STAGE', (65,12), 
-#                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
-#         cv2.putText(image, stage, 
-#                     (60,60), 
-#                     cv2.FONT_HERSHEY_SIMPLEX, 2, (255,255,255), 2, cv2.LINE_AA)
-        
-        
-#         # Render detections
-#         mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
-#                                 mp_drawing.DrawingSpec(color=(245,117,66), thickness=2, circle_radius=2), 
-#                                 mp_drawing.DrawingSpec(color=(245,66,230), thickness=2, circle_radius=2) 
-#                                 )               
-        
-#         cv2.imshow('Mediapipe Feed', image)
-
-#         if cv2.waitKey(10) & 0xFF == ord('q'):
-#             break
-
-#     cap.release()
-#     cv2.destroyAllWindows()
-
-# # import cv2
-# # import mediapipe as mp
-# # import numpy as np
-
-# # mp_drawing = mp.solutions.drawing_utils
-# # mp_pose = mp.solutions.pose
-
-# # def calculate_angle(a, b, c):
-# #     a = np.array(a)  # First
-# #     b = np.array(b)  # Mid
-# #     c = np.array(c)  # End
-
-# #     radians = np.arctan2(c[1]-b[1], c[0]-b[0]) - np.arctan2(a[1]-b[1], a[0]-b[0])
-# #     angle = np.abs(radians * 180.0 / np.pi)
-
-# #     if angle > 180.0:
-# #         angle = 360 - angle
-
-# #     return angle
-
-# # # Curl counter variables
-# # down_count = 0
-# # up_count = 0
-# # stage = None
-# # is_down = False
-
-# # # Setup mediapipe instance
-# # with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
-# #     cap = cv2.VideoCapture(0)
-# #     while cap.isOpened():
-# #         ret, frame = cap.read()
-# #         frame = cv2.resize(frame, (1280, 720), interpolation=cv2.INTER_AREA)
-
-# #         # Recolor image to RGB
-# #         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-# #         image.flags.writeable = False
-
-# #         # Make detection
-# #         results = pose.process(image)
-
-# #         # Recolor back to BGR
-# #         image.flags.writeable = True
-# #         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-
-# #         # Extract landmarks
-# #         try:
-# #             landmarks = results.pose_landmarks.landmark
-
-# #             # Get coordinates for left hand
-# #             left_shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x, landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
-# #             left_elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x, landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
-# #             left_wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x, landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
-
-# #             # Calculate angles
-# #             angle_left = calculate_angle(left_shoulder, left_elbow, left_wrist)
-
-# #             # Curl counter logic
-# #             if angle_left > 160 and not is_down:
-# #                 stage = "down"
-# #                 down_count += 1
-# #                 is_down = True
-# #             if angle_left < 30 and is_down:
-# #                 stage = "up"
-# #                 up_count += 1
-# #                 is_down = False
-
-# #             # Visualize counts on the image
-# #             cv2.putText(image, f"Downs: {down_count}", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-# #             cv2.putText(image, f"Ups: {up_count}", (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-
-# #         except:
-# #             pass
-
-# #         # Render detections
-# #         mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
-# #                                    mp_drawing.DrawingSpec(color=(245, 117, 66), thickness=2, circle_radius=2),
-# #                                    mp_drawing.DrawingSpec(color=(245, 66, 230), thickness=2, circle_radius=2)
-# #                                    )
-
-# #         cv2.imshow('Mediapipe Feed', image)
-
-# #         if cv2.waitKey(10) & 0xFF == ord('q'):
-# #             break
-
-# #     cap.release()
-# #     cv2.destroyAllWindows()
-
-
-
-
 import asyncio
 import cv2
 import mediapipe as mp
@@ -227,7 +10,7 @@ import threading
 engine = pyttsx3.init('sapi5')
 voices = engine.getProperty('voices')
 engine.setProperty('voices',voices[0].id)
-engine.setProperty('rate',170)
+engine.setProperty('rate',150)
 
 # def speak(text):
 #     engine.say(text)
@@ -243,7 +26,6 @@ def speak(text):
 
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
-
 def calculate_angle(a, b, c):
     a = np.array(a)  # First
     b = np.array(b)  # Mid
@@ -256,6 +38,19 @@ def calculate_angle(a, b, c):
         angle = 360 - angle
 
     return angle, np.sign(c[0] - a[0]) # Return angle and direction (+1 for right, -1 for left)
+
+
+
+# Define the durations for which the feedback text will be displayed (in seconds)
+feedback_display_duration_left = 5.0  # Adjust as needed
+feedback_display_duration_right = 5.0  # Adjust as needed
+feedback_display_duration_set = 5.0  # Adjust as needed
+
+# Initialize flags for feedback messages
+show_feedback_left = False
+show_feedback_right = False
+show_feedback_set = False
+
 
 # Curl counter variables
 down_count_left = 0
@@ -287,6 +82,8 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
     last_feedback_time_left = time.time()
     last_feedback_time_right = time.time()
     feedback_interval = 3.0
+    
+    
     while cap.isOpened():
         # speak("Hello Janvi")
         ret, frame = cap.read()
@@ -352,15 +149,17 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             if current_time - last_feedback_time_left >= feedback_interval and down_count_left < 16:
                 speak("Bend a slight more with your left arm")
                 last_feedback_time_left = current_time
-
+                show_feedback_left = True
             if current_time - last_feedback_time_right >= feedback_interval and down_count_right < 16:
                 speak("Bend a slight more with your right arm")
                 last_feedback_time_right = current_time
+                show_feedback_right = True
             #  *********** Check for changes in time(New) ********************
                 
             if(down_count_left == 21 or up_count_left == 21 or down_count_right == 21 or up_count_right == 21):
                 speak("Good Job!, Keep it up..")
                 speak("You have completed one set..")
+                show_feedback_set = True
                 break
 
             # Visualize counts for left hand on the image
@@ -371,9 +170,19 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             cv2.putText(image, f"Right Downs: {down_count_right}", (800, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
             cv2.putText(image, f"Right Ups: {up_count_right}", (800, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
+           # Display feedback messages
+            if show_feedback_left:
+              cv2.putText(image, "Bend a slight more with your left arm", (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+              show_feedback_left = False  # Disable flag after displaying the message
+            if show_feedback_right:
+              cv2.putText(image, "Bend a slight more with your right arm", (800, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+              show_feedback_right = False  # Disable flag after displaying the message
+            if show_feedback_set:
+              cv2.putText(image, "Good Job! Keep it up.. You have completed one set", (300, 350), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+              show_feedback_set = False  # Disable flag after displaying the message
         except:
             pass
-
+     
         # Render detections
         mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
                                    mp_drawing.DrawingSpec(color=(245, 117, 66), thickness=2, circle_radius=2),
