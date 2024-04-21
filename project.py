@@ -10,7 +10,7 @@ import threading
 engine = pyttsx3.init('sapi5')
 voices = engine.getProperty('voices')
 engine.setProperty('voices',voices[0].id)
-engine.setProperty('rate',150)
+engine.setProperty('rate',170)
 
 # def speak(text):
 #     engine.say(text)
@@ -24,13 +24,14 @@ def speak(text):
     # Created a thread for speech output
     threading.Thread(target=_speak, args=(text,)).start()
 
-def draw_text_with_fade(image, text, position, duration_ms=1450):
+def draw_text_with_fade(image, text, position, duration_ms=1400):
     cv2.putText(image, text, position, cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
     cv2.imshow('Mediapipe Feed', image)
     cv2.waitKey(duration_ms)  
 
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
+
 def calculate_angle(a, b, c):
     a = np.array(a)  # First
     b = np.array(b)  # Mid
@@ -43,19 +44,6 @@ def calculate_angle(a, b, c):
         angle = 360 - angle
 
     return angle, np.sign(c[0] - a[0]) # Return angle and direction (+1 for right, -1 for left)
-
-
-
-# Define the durations for which the feedback text will be displayed (in seconds)
-feedback_display_duration_left = 5.0  # Adjust as needed
-feedback_display_duration_right = 5.0  # Adjust as needed
-feedback_display_duration_set = 5.0  # Adjust as needed
-
-# Initialize flags for feedback messages
-show_feedback_left = False
-show_feedback_right = False
-show_feedback_set = False
-
 
 # Curl counter variables
 down_count_left = 0
@@ -87,8 +75,6 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
     last_feedback_time_left = time.time()
     last_feedback_time_right = time.time()
     feedback_interval = 3.0
-    
-    
     while cap.isOpened():
         # speak("Hello Janvi")
         ret, frame = cap.read()
@@ -156,19 +142,17 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                 threading.Thread(target=draw_text_with_fade, args=(image, "Bend a slight more with your left arm", (500, 650))).start()
                 # time.sleep(2.5)
                 last_feedback_time_left = current_time
-                show_feedback_left = True
+
             if current_time - last_feedback_time_right >= feedback_interval and down_count_right < 16:
                 speak("Bend a slight more with your right arm")
                 threading.Thread(target=draw_text_with_fade, args=(image, "Bend a slight more with your right arm", (500, 650))).start()
                 # time.sleep(2.5)
                 last_feedback_time_right = current_time
-                show_feedback_right = True
             #  *********** Check for changes in time(New) ********************
                 
             if(down_count_left == 21 or up_count_left == 21 or down_count_right == 21 or up_count_right == 21):
                 speak("Good Job!, Keep it up..")
                 speak("You have completed one set..")
-                show_feedback_set = True
                 break
 
             # Visualize counts for left hand on the image
@@ -179,19 +163,9 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             cv2.putText(image, f"Right Downs: {down_count_right}", (800, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
             cv2.putText(image, f"Right Ups: {up_count_right}", (800, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
-           # Display feedback messages
-            if show_feedback_left:
-              cv2.putText(image, "Bend a slight more with your left arm", (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
-              show_feedback_left = False  # Disable flag after displaying the message
-            if show_feedback_right:
-              cv2.putText(image, "Bend a slight more with your right arm", (800, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
-              show_feedback_right = False  # Disable flag after displaying the message
-            if show_feedback_set:
-              cv2.putText(image, "Good Job! Keep it up.. You have completed one set", (300, 350), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-              show_feedback_set = False  # Disable flag after displaying the message
         except:
             pass
-     
+
         # Render detections
         mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
                                    mp_drawing.DrawingSpec(color=(245, 117, 66), thickness=2, circle_radius=2),
