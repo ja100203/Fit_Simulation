@@ -238,8 +238,13 @@ def speak(text):
         engine.say(text)
         engine.runAndWait()
     
-    # Create a thread for speech output
+    # Created a thread for speech output
     threading.Thread(target=_speak, args=(text,)).start()
+
+def draw_text_with_fade(image, text, position, duration_ms=1450):
+    cv2.putText(image, text, position, cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+    cv2.imshow('Mediapipe Feed', image)
+    cv2.waitKey(duration_ms)  
 
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
@@ -351,10 +356,14 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             current_time = time.time()
             if current_time - last_feedback_time_left >= feedback_interval and down_count_left < 16:
                 speak("Bend a slight more with your left arm")
+                threading.Thread(target=draw_text_with_fade, args=(image, "Bend a slight more with your left arm", (500, 650))).start()
+                # time.sleep(2.5)
                 last_feedback_time_left = current_time
 
             if current_time - last_feedback_time_right >= feedback_interval and down_count_right < 16:
                 speak("Bend a slight more with your right arm")
+                threading.Thread(target=draw_text_with_fade, args=(image, "Bend a slight more with your right arm", (500, 650))).start()
+                # time.sleep(2.5)
                 last_feedback_time_right = current_time
             #  *********** Check for changes in time(New) ********************
                 
