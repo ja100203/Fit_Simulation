@@ -7,6 +7,9 @@ import speech_recognition as sr
 import time
 import threading
 
+import numpy as np
+import streamlit as st
+
 engine = pyttsx3.init('sapi5')
 voices = engine.getProperty('voices')
 engine.setProperty('voices',voices[0].id)
@@ -72,12 +75,21 @@ is_down_right = False
 # Setup mediapipe instance
 with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
     cap = cv2.VideoCapture(0)
+    
+    st.title("OnenCV feed...")
+    frame_placeholder = st.empty()
+    stop_button_pressed = st.button("STOP")
+
     last_feedback_time_left = time.time()
     last_feedback_time_right = time.time()
     feedback_interval = 3.0
-    while cap.isOpened():
+    while cap.isOpened() and not stop_button_pressed:
         # speak("Hello Janvi")
         ret, frame = cap.read()
+        if not ret:
+            st.write("This video capture has ended")
+            break
+        
         frame = cv2.resize(frame, (1280, 720), interpolation=cv2.INTER_AREA)
         # Recolor image to RGB
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -172,9 +184,10 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                                    mp_drawing.DrawingSpec(color=(245, 66, 230), thickness=2, circle_radius=2)
                                    )
 
-        cv2.imshow('Mediapipe Feed', image)
-
-        if cv2.waitKey(10) & 0xFF == ord('q'):
+        # cv2.imshow('Mediapipe Feed', image)
+        frame_placeholder.image(image, channels="BGR")
+        
+        if cv2.waitKey(10) & 0xFF == ord('q') or stop_button_pressed:
             break
 
     cap.release()
